@@ -45,7 +45,9 @@
 
 #include "uv/threadpool.h"
 
-#if defined(__linux__)
+#if defined(__EMSCRIPTEN__)
+# include "uv/posix.h"
+#elif defined(__linux__)
 # include "uv/linux.h"
 #elif defined (__MVS__)
 # include "uv/os390.h"

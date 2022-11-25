@@ -130,6 +130,9 @@ static void uv__pollfds_del(uv_loop_t* loop, int fd) {
   }
 }
 
+#ifdef __EMSCRIPTEN__
+extern int uv_async_poll(struct pollfd *, nfds_t, int);
+#endif
 
 void uv__io_poll(uv_loop_t* loop, int timeout) {
   sigset_t* pset;
@@ -201,7 +204,11 @@ void uv__io_poll(uv_loop_t* loop, int timeout) {
     if (pset != NULL)
       if (pthread_sigmask(SIG_BLOCK, pset, NULL))
         abort();
+#ifdef __EMSCRIPTEN__
+    nfds = uv_async_poll(loop->poll_fds, (nfds_t)loop->poll_fds_used, timeout);
+#else
     nfds = poll(loop->poll_fds, (nfds_t)loop->poll_fds_used, timeout);
+#endif
     if (pset != NULL)
       if (pthread_sigmask(SIG_UNBLOCK, pset, NULL))
         abort();

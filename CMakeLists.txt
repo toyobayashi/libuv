@@ -272,6 +272,22 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
        src/unix/epoll.c)
 endif()
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+  list(APPEND uv_libraries dl)
+  # list(REMOVE_ITEM uv_sources src/unix/dl.c)
+  list(APPEND uv_sources
+       src/unix/bsd-ifaddrs.c
+       src/unix/no-fsevents.c
+       src/unix/no-proctitle.c
+       src/unix/posix-hrtime.c
+       src/unix/posix-poll.c
+       src/unix/emscripten.c)
+  list(APPEND uv_cflags
+    "-sUSE_PTHREADS=1"
+    "-sWASM_WORKERS=1"
+  )
+endif()
+
 if(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
   list(APPEND uv_sources src/unix/netbsd.c)
   list(APPEND uv_libraries kvm)
@@ -406,6 +422,11 @@ if(CMAKE_SYSTEM_NAME STREQUAL "OS390")
   set_target_properties(uv_a PROPERTIES LINKER_LANGUAGE CXX)
 endif()
 target_link_libraries(uv_a ${uv_libraries})
+
+# if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+#   set_target_properties(uv PROPERTIES POSITION_INDEPENDENT_CODE 1)
+#   set_target_properties(uv_a PROPERTIES POSITION_INDEPENDENT_CODE 1)
+# endif()
 
 if(LIBUV_BUILD_TESTS)
   # Small hack: use ${uv_test_sources} now to get the runner skeleton,
